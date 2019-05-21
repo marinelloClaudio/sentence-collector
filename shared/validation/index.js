@@ -1,9 +1,10 @@
-import tokenizeWords from 'talisman/tokenizers/words';
-
 import * as en from './languages/en';
-
+import * as it from './languages/it';
+import * as ne from './languages/ne';
 const VALIDATORS = {
   en,
+  it,
+  ne
 };
 
 const DEFAULT_VALIDATOR_LANGUAGE = 'en';
@@ -60,24 +61,27 @@ function validateSentence(validator, sentence) {
     return validationResult;
   }
 
+  if (!validateStructure(validator, sentence)) {
+    validationResult.error = 'Contains multiple sentences';
+    return validationResult;
+  }
+  
+  if (!validateWithoutEnglishCharacters(validator, sentence)) {
+    validationResult.error = 'Contains english characters';
+    return validationResult;
+  }
+  
+
   return validationResult;
 }
 
 function validateCorrectLength(validator, sentence) {
-  let maxLength = 0;
-  let minLength = 0;
+  const result =
+    typeof validator.filterNumbers !== 'function' ?
+      DEFAULT_VALIDATOR.filterLength(sentence) :
+      validator.filterLength(sentence);
 
-  if (typeof validator.getMaxLength !== 'function') {
-    maxLength = DEFAULT_VALIDATOR.getMaxLength();
-    minLength = DEFAULT_VALIDATOR.getMinLength();
-  } else {
-    maxLength = validator.getMaxLength();
-    minLength = validator.getMinLength();
-  }
-
-  const words = tokenizeWords(sentence);
-  return words.length >= minLength &&
-    words.length <= maxLength;
+  return result;
 }
 
 function validateWithoutNumbers(validator, sentence) {
@@ -103,6 +107,24 @@ function validateWithoutSymbols(validator, sentence) {
     typeof validator.filterSymbols !== 'function' ?
       DEFAULT_VALIDATOR.filterSymbols(sentence) :
       validator.filterSymbols(sentence);
+
+  return result;
+}
+
+function validateStructure(validator, sentence) {
+  const result =
+    typeof validator.filterStructure !== 'function' ?
+      DEFAULT_VALIDATOR.filterStructure(sentence) :
+      validator.filterStructure(sentence);
+
+  return result;
+}
+
+function validateWithoutEnglishCharacters(validator, sentence) {
+  const result =
+    typeof validator.filterEnglishCharacters !== 'function'
+      ? true
+      : validator.filterEnglishCharacters(sentence);
 
   return result;
 }

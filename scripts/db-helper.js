@@ -12,13 +12,18 @@ const ACTION_FLUSH = 'flush';
 const ACTION_LIST_USERS = 'list';
 const ACTION_EXPORT = 'export';
 const ACTION_DELETE = 'delete';
+const ACTION_DELETE_SPECIFIC = 'delete-specific';
+const ACTION_FORCE_DELETE_SPECIFIC = 'force-delete-specific';
 
 const system = process.env.SC_SYSTEM;
 const remote = process.env.KINTO_URL_LOCAL;
 const prodRemote = process.env.KINTO_URL_PROD;
+const prodRemoteIP = process.env.KINTO_IP_PROD;
 const username = process.env.KINTO_USER;
 const password = process.env.KINTO_PASSWORD;
 const exportPath = process.env.COMMON_VOICE_PATH + '/server/data';
+const deleteLocale = process.env.DELETE_SPECIFIC_LOCALE;
+const deleteUsername = process.env.DELETE_SPECIFIC_USERNAME;
 
 const action = process.argv[2];
 
@@ -36,7 +41,7 @@ async function listUsers() {
 }
 
 async function exportDB() {
-  const remoteHost = system === 'production' ? prodRemote : remote;
+  const remoteHost = system === 'production' ? prodRemoteIP : remote;
   const db = new DB(remoteHost, username, password);
   await startExport(db, exportPath);
 }
@@ -62,6 +67,26 @@ async function deleteSentences() {
   const remoteHost = system === 'production' ? prodRemote : remote;
   const db = new DB(remoteHost, username, password);
   await db.deleteSentenceRecords();
+}
+
+async function deleteSpecificSentences() {
+  const remoteHost = system === 'production' ? prodRemote : remote;
+  const db = new DB(remoteHost, username, password);
+  if (!deleteLocale || !deleteUsername) {
+    fail('DELETE_SPECIFIC_LOCALE and DELETE_SPECIFIC_USERNAME are required');
+  }
+
+  await db.deleteSpecificSentenceRecords(deleteLocale, deleteUsername);
+}
+
+async function forceDeleteSpecificSentences() {
+  const remoteHost = system === 'production' ? prodRemote : remote;
+  const db = new DB(remoteHost, username, password);
+  if (!deleteLocale || !deleteUsername) {
+    fail('DELETE_SPECIFIC_LOCALE and DELETE_SPECIFIC_USERNAME are required');
+  }
+
+  await db.forceDeleteSpecificSentenceRecords(deleteLocale, deleteUsername);
 }
 
 async function run() {
@@ -108,6 +133,14 @@ async function run() {
 
       case ACTION_DELETE:
         await deleteSentences();
+        break;
+
+      case ACTION_DELETE_SPECIFIC:
+        await deleteSpecificSentences();
+        break;
+
+      case ACTION_FORCE_DELETE_SPECIFIC:
+        await forceDeleteSpecificSentences();
         break;
 
       default:

@@ -19,10 +19,7 @@ export const ACTION_REMOVE_LANGUAGE_FAILURE = 'REMOVE_LANGUAGE_FAILURE';
 
 export const ACTION_SUBMIT_SENTENCES_REQUEST = 'SUBMIT_SENTENCES_REQUEST';
 export const ACTION_SUBMIT_SENTENCES_SUCCESS = 'SUBMIT_SENTENCES_SUCCESS';
-export const ACTION_SUBMIT_SENTENCES_FAILURE = 'SUBMIT_SENTENCES_FAILURE';
 export const ACTION_SUBMIT_SENTENCES_FAILURE_SINGLE = 'SUBMIT_SENTENCES_FAILURE_SINGLE';
-
-export const ACTION_RESET_STATE = 'ACTION_RESET_STATE';
 
 const VALID_USERNAME_CHARACTERS = /^[a-zA-Z0-9]+$/;
 
@@ -109,7 +106,6 @@ export function submitSentences(language, sentences, source) {
       dispatch(submitSentencesFailureSingle(errorsWithSentenceInfo));
       return results;
     } catch (err) {
-      dispatch(submitSentencesFailure());
       throw err;
     }
   };
@@ -217,22 +213,9 @@ export function submitSentencesSuccess(sentences) {
   };
 }
 
-export function submitSentencesFailure() {
-  return {
-    type: ACTION_SUBMIT_SENTENCES_FAILURE,
-  };
-}
-
 export function submitSentencesFailureSingle(errors) {
   return {
     type: ACTION_SUBMIT_SENTENCES_FAILURE_SINGLE,
     errors,
   };
 }
-
-export function resetFullState() {
-  return {
-    type: ACTION_RESET_STATE,
-  };
-}
-

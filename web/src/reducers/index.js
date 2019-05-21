@@ -15,14 +15,10 @@ import {
   ACTION_REMOVE_LANGUAGE_FAILURE,
   ACTION_SUBMIT_SENTENCES_REQUEST,
   ACTION_SUBMIT_SENTENCES_SUCCESS,
-  ACTION_SUBMIT_SENTENCES_FAILURE,
   ACTION_SUBMIT_SENTENCES_FAILURE_SINGLE,
-  ACTION_RESET_STATE,
 } from '../actions';
 
 import {
-  ACTION_PARSE_SENTENCES_STARTED,
-  ACTION_PARSE_SENTENCES_FINISHED,
   ACTION_PARSE_SENTENCES_FAILURE,
 } from '../actions/parsing';
 
@@ -34,8 +30,6 @@ export const INITIAL_STATE = {
   languages: [],
   pendingLanguages: false,
   sentences: [],
-  pendingSentences: false,
-  parsingSentences: false,
   errorMessage: null,
   sentenceSubmissionFailures: [],
 };
@@ -130,7 +124,6 @@ export default function reducer(state = INITIAL_STATE, action) {
 
     case ACTION_SUBMIT_SENTENCES_REQUEST:
       return copyInto(state, {
-        pendingSentences: true,
         sentenceSubmissionFailures: [],
       });
 
@@ -141,37 +134,12 @@ export default function reducer(state = INITIAL_STATE, action) {
 
     case ACTION_SUBMIT_SENTENCES_SUCCESS:
       return copyInto(state, {
-        pendingSentences: false,
         sentences: mergeArray(state.sentences, action.sentences),
-      });
-
-    case ACTION_SUBMIT_SENTENCES_FAILURE:
-      return copyInto(state, {
-        pendingSentences: false,
-      });
-
-    case ACTION_PARSE_SENTENCES_STARTED:
-      return copyInto(state, {
-        parsingSentences: true,
-        errorMessage: null,
-      });
-
-    case ACTION_PARSE_SENTENCES_FINISHED:
-      return copyInto(state, {
-        parsingSentences: false,
       });
 
     case ACTION_PARSE_SENTENCES_FAILURE:
       return copyInto(state, {
         errorMessage: action.error.message,
-      });
-
-    case ACTION_RESET_STATE:
-      return Object.assign({}, state, INITIAL_STATE, {
-        username: state.username,
-        password: state.password,
-        authed: state.authed,
-        languages: state.languages,
       });
 
     default:

@@ -68,6 +68,32 @@ export default class SentencesMeta {
     }
   }
 
+  async deleteSpecificSentenceRecords(bucket, locale, username) {
+    const collectionName = await this.getCollectionName(locale);
+    const records = await this.getAllUnapprovedByUsername(locale, username);
+    const minifiedRecords = records.map((record) => ({ id: record.id, sentence: record.sentence }));
+    console.log(`Found ${minifiedRecords.length} records to delete for ${locale} with username ${username}`);
+    await bucket.batch(b => {
+      for (let i = 0; i < minifiedRecords.length; i++) {
+        console.log('Deleting', minifiedRecords[i]);
+        b.collection(collectionName).deleteRecord(minifiedRecords[i].id);
+      }
+    });
+  }
+
+  async forceDeleteSpecificSentenceRecords(bucket, locale, username) {
+    const collectionName = await this.getCollectionName(locale);
+    const records = await this.getAllByUsername(locale, username);
+    const minifiedRecords = records.map((record) => ({ id: record.id, sentence: record.sentence }));
+    console.log(`Found ${minifiedRecords.length} records to delete for ${locale} with username ${username}`);
+    await bucket.batch(b => {
+      for (let i = 0; i < minifiedRecords.length; i++) {
+        console.log('Deleting', minifiedRecords[i]);
+        b.collection(collectionName).deleteRecord(minifiedRecords[i].id);
+      }
+    });
+  }
+
   async createAllCollections(bucket) {
     const languages = getAllLanguages();
     const results = await bucket.batch(b => {
@@ -109,6 +135,25 @@ export default class SentencesMeta {
   async getAll(language) {
     const collection = await this.getCollection(language);
     const result = await collection.listRecords();
+    return result.data;
+  }
+
+  async getAllUnapprovedByUsername(language, username) {
+    const collection = await this.getCollection(language);
+    const filters = {
+      username,
+      approved: false,
+    };
+    const result = await collection.listRecords({ filters });
+    return result.data;
+  }
+
+  async getAllByUsername(language, username) {
+    const collection = await this.getCollection(language);
+    const filters = {
+      username,
+    };
+    const result = await collection.listRecords({ filters });
     return result.data;
   }
 
@@ -164,6 +209,22 @@ export default class SentencesMeta {
     const collection = await this.getCollection(language);
     const result = await collection.listRecords({ filters });
     return result.data;
+  }
+
+  async getAllValidatedSentences(language) {
+    const filters = {};
+    filters.approved = true;
+    const collection = await this.getCollection(language);
+
+    let { data, hasNextPage, next } = await collection.listRecords({ filters });
+    while (hasNextPage) {
+      const result = await next();
+      data = data.concat(result.data);
+      hasNextPage = result.hasNextPage;
+      next = result.next;
+    }
+
+    return data;
   }
 
   prepareForSubmission(sentences) {

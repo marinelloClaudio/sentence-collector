@@ -60,6 +60,16 @@ export default class DB {
     return this.sentences.deleteSentenceRecords(bucket);
   }
 
+  async deleteSpecificSentenceRecords(locale, username) {
+    const bucket = await this.getBucket();
+    return this.sentences.deleteSpecificSentenceRecords(bucket, locale, username);
+  }
+
+  async forceDeleteSpecificSentenceRecords(locale, username) {
+    const bucket = await this.getBucket();
+    return this.sentences.forceDeleteSpecificSentenceRecords(bucket, locale, username);
+  }
+
   async getCVMetadata() {
     const bucket = await this.getBucket();
     return this.cvSentences.getLanguageAndSentenceCounts(bucket);
@@ -92,6 +102,10 @@ export default class DB {
 
   async getValidatedSentences(language) {
     return this.sentences.getValidatedSentences(language);
+  }
+
+  async getAllValidatedSentences(language) {
+    return this.sentences.getAllValidatedSentences(language);
   }
 
   async submitSentences(language, sentences, source) {
